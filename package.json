@@ -1,0 +1,19 @@
+{
+  "name": "doctor-patient-management",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run start:dev --workspace=backend",
+    "dev:backend": "npm run start:dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "debug:backend": "npm run start:debug --workspace=backend",
+    "debug:frontend": "npm run start:debug --workspace=frontend",
+    "build": "npm run build --workspace=backend",
+    "build:backend": "npm run build --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "watch": ["src"],
+  "ext": "ts,json",
+  "ignore": ["src/**/*.spec.ts", "node_modules", "dist"],
+  "exec": "npm run build && node dist/main.js",
+  "delay": "800",
+  "signal": "SIGTERM",
+  "legacyWatch": true,
+  "verbose": false
+}
