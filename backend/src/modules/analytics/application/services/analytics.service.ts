@@ -1,61 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Appointment } from '../../../appointments/domain/entities/appointment.entity';
+import { AppointmentRepository } from '../../../appointments/domain/repositories/appointment.repository';
 
 @Injectable()
 export class AnalyticsService {
-  constructor(
-    @InjectRepository(Appointment)
-    private appointmentRepo: Repository<Appointment>,
-  ) {}
+  constructor(private readonly appointmentRepository: AppointmentRepository) {}
 
   async mostBookedSpeciality() {
-    const raw = await this.appointmentRepo
-      .createQueryBuilder('a')
-      .innerJoin('a.doctor', 'd')
-      .select('d.speciality', 'speciality')
-      .addSelect('COUNT(*)', 'count')
-      .groupBy('d.speciality')
-      .orderBy('count', 'DESC')
-      .limit(10)
-      .getRawMany();
-    return raw;
+    return this.appointmentRepository.mostBookedSpeciality();
   }
 
   async mostBookedDoctor() {
-    const raw = await this.appointmentRepo
-      .createQueryBuilder('a')
-      .innerJoin('a.doctor', 'd')
-      .innerJoin('d.user', 'u')
-      .select('d.id', 'doctorId')
-      .addSelect('u.name', 'doctorName')
-      .addSelect('d.speciality', 'speciality')
-      .addSelect('COUNT(*)', 'count')
-      .groupBy('d.id')
-      .addGroupBy('u.name')
-      .addGroupBy('d.speciality')
-      .orderBy('count', 'DESC')
-      .limit(10)
-      .getRawMany();
-    return raw;
+    return this.appointmentRepository.mostBookedDoctor();
   }
 
   async mostBookedTimeslot() {
-    const raw = await this.appointmentRepo
-      .createQueryBuilder('a')
-      .innerJoin('a.slot', 's')
-      .select('s.date', 'date')
-      .addSelect('s.startTime', 'startTime')
-      .addSelect('s.endTime', 'endTime')
-      .addSelect('COUNT(*)', 'count')
-      .groupBy('s.date')
-      .addGroupBy('s.startTime')
-      .addGroupBy('s.endTime')
-      .orderBy('count', 'DESC')
-      .limit(10)
-      .getRawMany();
-    return raw;
+    return this.appointmentRepository.mostBookedTimeslot();
   }
 
   async dashboard() {

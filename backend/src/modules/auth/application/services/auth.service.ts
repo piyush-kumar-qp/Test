@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../../../users/application/services/users.service';
+import { AuthRepository } from '../../domain/repositories/auth.repository';
 import * as bcrypt from 'bcrypt';
 import { RegisterPatientDto } from '../dtos/register-patient.dto';
 import { UserRole } from '../../../users/domain/enums/user-role.enum';
@@ -8,6 +9,7 @@ import { UserRole } from '../../../users/domain/enums/user-role.enum';
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly authRepository: AuthRepository,
     private usersService: UsersService,
     private jwtService: JwtService,
   ) {}
@@ -23,7 +25,7 @@ export class AuthService {
   }
 
   async validateUser(email: string, password: string) {
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.authRepository.findUserByEmail(email);
     if (!user) return null;
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return null;

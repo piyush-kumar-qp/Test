@@ -1,54 +1,30 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Slot } from '../../domain/entities/slot.entity';
+import { SlotRepository } from '../../domain/repositories/slot.repository';
 import { CreateSlotDto } from '../dtos/create-slot.dto';
 
 @Injectable()
 export class SlotsService {
-  constructor(
-    @InjectRepository(Slot)
-    private slotRepo: Repository<Slot>,
-  ) {}
+  constructor(private readonly slotRepository: SlotRepository) {}
 
   async create(data: CreateSlotDto & { doctorId: string }) {
-    const slot = this.slotRepo.create(data);
-    return this.slotRepo.save(slot);
+    const slot = this.slotRepository.create(data);
+    return this.slotRepository.save(slot);
   }
 
   async findByDoctor(doctorId: string) {
-    return this.slotRepo.find({
-      where: { doctorId },
-      relations: ['doctor', 'doctor.user'],
-      order: { date: 'ASC', startTime: 'ASC' },
-    });
+    return this.slotRepository.findByDoctorId(doctorId);
   }
 
   async findAvailable(filters?: { speciality?: string; date?: string }) {
-    const qb = this.slotRepo
-      .createQueryBuilder('slot')
-      .leftJoinAndSelect('slot.doctor', 'doctor')
-      .leftJoinAndSelect('doctor.user', 'user')
-      .where('slot.isAvailable = :av', { av: true });
-    if (filters?.speciality) {
-      qb.andWhere('doctor.speciality = :spec', { spec: filters.speciality });
-    }
-    if (filters?.date) {
-      qb.andWhere('slot.date = :date', { date: filters.date });
-    }
-    qb.orderBy('slot.date', 'ASC').addOrderBy('slot.startTime', 'ASC');
-    return qb.getMany();
+    return this.slotRepository.findAvailable(filters);
   }
 
   async findOne(id: string) {
-    return this.slotRepo.findOne({
-      where: { id },
-      relations: ['doctor', 'doctor.user'],
-    });
+    return this.slotRepository.findOneById(id);
   }
 
   async updateAvailability(id: string, isAvailable: boolean) {
-    await this.slotRepo.update(id, { isAvailable });
-    return this.findOne(id);
+    await this.slotRepository.updateAvailability(id, isAvailable);
+    return this.slotRepository.findOneById(id);
   }
 }

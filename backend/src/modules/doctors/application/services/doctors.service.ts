@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { Doctor } from '../../domain/entities/doctor.entity';
+import { DoctorRepository } from '../../domain/repositories/doctor.repository';
 import { UsersService } from '../../../users/application/services/users.service';
 import { UserRole } from '../../../users/domain/enums/user-role.enum';
 import { CreateDoctorDto } from '../dtos/create-doctor.dto';
@@ -10,8 +8,7 @@ import { CreateDoctorDto } from '../dtos/create-doctor.dto';
 @Injectable()
 export class DoctorsService {
   constructor(
-    @InjectRepository(Doctor)
-    private doctorRepo: Repository<Doctor>,
+    private readonly doctorRepository: DoctorRepository,
     private usersService: UsersService,
   ) {}
 
@@ -23,33 +20,23 @@ export class DoctorsService {
       name: dto.name,
       role: UserRole.DOCTOR,
     });
-    const doctor = this.doctorRepo.create({
+    const doctor = this.doctorRepository.create({
       userId: user.id,
       speciality: dto.speciality,
       qualification: dto.qualification,
     });
-    return this.doctorRepo.save(doctor);
+    return this.doctorRepository.save(doctor);
   }
 
   async findAll() {
-    return this.doctorRepo.find({
-      relations: ['user'],
-      where: { isActive: true },
-      order: { createdAt: 'DESC' },
-    });
+    return this.doctorRepository.findAllActive();
   }
 
   async findOne(id: string) {
-    return this.doctorRepo.findOne({
-      where: { id },
-      relations: ['user'],
-    });
+    return this.doctorRepository.findOneById(id);
   }
 
   async findByUserId(userId: string) {
-    return this.doctorRepo.findOne({
-      where: { userId },
-      relations: ['user'],
-    });
+    return this.doctorRepository.findOneByUserId(userId);
   }
 }

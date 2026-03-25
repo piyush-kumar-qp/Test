@@ -1,34 +1,23 @@
 import { Injectable, ConflictException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../../domain/entities/user.entity';
+import { UserRepository } from '../../domain/repositories/user.repository';
 import { UserRole } from '../../domain/enums/user-role.enum';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectRepository(User)
-    private userRepo: Repository<User>,
-  ) {}
+  constructor(private readonly userRepository: UserRepository) {}
 
   async create(data: { email: string; password: string; name: string; role: UserRole }) {
-    const existing = await this.userRepo.findOne({ where: { email: data.email } });
+    const existing = await this.userRepository.findOneByEmail(data.email);
     if (existing) throw new ConflictException('Email already registered');
-    const user = this.userRepo.create(data);
-    return this.userRepo.save(user);
+    const user = this.userRepository.create(data);
+    return this.userRepository.save(user);
   }
 
   async findByEmail(email: string) {
-    return this.userRepo.findOne({
-      where: { email },
-      relations: ['doctor'],
-    });
+    return this.userRepository.findOneByEmail(email);
   }
 
   async findById(id: string) {
-    return this.userRepo.findOne({
-      where: { id },
-      relations: ['doctor'],
-    });
+    return this.userRepository.findOneById(id);
   }
 }
